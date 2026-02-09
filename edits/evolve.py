@@ -138,7 +138,7 @@ for i, (redshift, slice_data) in enumerate(zip(redshifts, neutral_fraction_slice
         axes[0, i].set_ylabel("Neutral Fraction\nMpc", fontsize=10)
 
 # Add colorbar for neutral fraction
-cbar1 = fig.colorbar(im1, ax=axes[0, :], orientation='horizontal',
+cbar1 = fig.colorbar(im1, ax=axes[0, :], orientation='vertical',
                      pad=0.05, aspect=40, shrink=0.8)
 cbar1.set_label('Neutral Fraction', fontsize=11)
 
@@ -158,7 +158,7 @@ for i, (redshift, slice_data) in enumerate(zip(redshifts, kinetic_temp_slices)):
         axes[1, i].set_ylabel("Kinetic Temperature\nMpc", fontsize=10)
 
 # Add colorbar for kinetic temperature
-cbar2 = fig.colorbar(im2, ax=axes[1, :], orientation='horizontal',
+cbar2 = fig.colorbar(im2, ax=axes[1, :], orientation='vertical',
                      pad=0.05, aspect=40, shrink=0.8)
 cbar2.set_label('Kinetic Temperature [K]', fontsize=11)
 

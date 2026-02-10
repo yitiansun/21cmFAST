@@ -1340,6 +1340,9 @@ class TsBox(OutputStructZ):
         xray_source_box: XraySourceBox,
         prev_spin_temp: TsBox,
         ics: InitialConditions,
+        input_heating: InputHeating,
+        input_ionization: InputIonization,
+        input_jalpha: InputJAlpha,
         allow_already_computed: bool = False,
     ):
         """Compute the function."""
@@ -1353,6 +1356,9 @@ class TsBox(OutputStructZ):
             xray_source_box,
             prev_spin_temp,
             ics,
+            input_heating,
+            input_ionization,
+            input_jalpha,
         )
 
 
@@ -1609,3 +1615,144 @@ class BrightnessTemp(OutputStructZ):
             ionized_box,
             perturbed_field,
         )
+
+
+@attrs.define(slots=False, kw_only=True)
+class InputHeating(OutputStructZ):
+    """A class containing the input heating box for exotic energy injection."""
+
+    _c_compute_function = lib.InitInputHeating
+    _meta = False
+
+    input_heating = _arrayfield()
+
+    @classmethod
+    def new(cls, inputs: InputParameters, redshift: float, **kw) -> Self:
+        """Create a new InputHeating instance with the given inputs.
+
+        Parameters
+        ----------
+        inputs : InputParameters
+            The input parameters defining the output struct.
+        redshift : float
+            The redshift at which to compute fields.
+
+        Other Parameters
+        ----------------
+        All other parameters are passed through to the :class:`InputHeating`
+        constructor.
+        """
+        shape = (inputs.simulation_options.HII_DIM,) * 2 + (
+            int(
+                inputs.simulation_options.NON_CUBIC_FACTOR
+                * inputs.simulation_options.HII_DIM
+            ),
+        )
+        return cls(
+            inputs=inputs,
+            redshift=redshift,
+            input_heating=Array(shape, dtype=np.float32),
+            **kw,
+        )
+
+    def get_required_input_arrays(self, input_box: OutputStruct) -> list[str]:
+        """Return all input arrays required to compute this object."""
+        return []
+
+    def compute(self, *, allow_already_computed: bool = False):
+        """Compute the function."""
+        return self._compute(allow_already_computed)
+
+
+@attrs.define(slots=False, kw_only=True)
+class InputIonization(OutputStructZ):
+    """A class containing the input ionization box for exotic energy injection."""
+
+    _c_compute_function = lib.InitInputIonization
+    _meta = False
+
+    input_ionization = _arrayfield()
+
+    @classmethod
+    def new(cls, inputs: InputParameters, redshift: float, **kw) -> Self:
+        """Create a new InputIonization instance with the given inputs.
+
+        Parameters
+        ----------
+        inputs : InputParameters
+            The input parameters defining the output struct.
+        redshift : float
+            The redshift at which to compute fields.
+
+        Other Parameters
+        ----------------
+        All other parameters are passed through to the :class:`InputIonization`
+        constructor.
+        """
+        shape = (inputs.simulation_options.HII_DIM,) * 2 + (
+            int(
+                inputs.simulation_options.NON_CUBIC_FACTOR
+                * inputs.simulation_options.HII_DIM
+            ),
+        )
+        return cls(
+            inputs=inputs,
+            redshift=redshift,
+            input_ionization=Array(shape, dtype=np.float32),
+            **kw,
+        )
+
+    def get_required_input_arrays(self, input_box: OutputStruct) -> list[str]:
+        """Return all input arrays required to compute this object."""
+        return []
+
+    def compute(self, *, allow_already_computed: bool = False):
+        """Compute the function."""
+        return self._compute(allow_already_computed)
+
+
+@attrs.define(slots=False, kw_only=True)
+class InputJAlpha(OutputStructZ):
+    """A class containing the input J_alpha box for exotic energy injection."""
+
+    _c_compute_function = lib.InitInputJAlpha
+    _meta = False
+
+    input_jalpha = _arrayfield()
+
+    @classmethod
+    def new(cls, inputs: InputParameters, redshift: float, **kw) -> Self:
+        """Create a new InputJAlpha instance with the given inputs.
+
+        Parameters
+        ----------
+        inputs : InputParameters
+            The input parameters defining the output struct.
+        redshift : float
+            The redshift at which to compute fields.
+
+        Other Parameters
+        ----------------
+        All other parameters are passed through to the :class:`InputJAlpha`
+        constructor.
+        """
+        shape = (inputs.simulation_options.HII_DIM,) * 2 + (
+            int(
+                inputs.simulation_options.NON_CUBIC_FACTOR
+                * inputs.simulation_options.HII_DIM
+            ),
+        )
+        return cls(
+            inputs=inputs,
+            redshift=redshift,
+            input_jalpha=Array(shape, dtype=np.float32),
+            **kw,
+        )
+
+    def get_required_input_arrays(self, input_box: OutputStruct) -> list[str]:
+        """Return all input arrays required to compute this object."""
+        return []
+
+    def compute(self, *, allow_already_computed: bool = False):
+        """Compute the function."""
+        return self._compute(allow_already_computed)

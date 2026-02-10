@@ -31,7 +31,9 @@
 
 void ts_main(float redshift, float prev_redshift, float perturbed_field_redshift, short cleanup,
              PerturbedField *perturbed_field, XraySourceBox *source_box, TsBox *previous_spin_temp,
-             InitialConditions *ini_boxes, TsBox *this_spin_temp);
+             InitialConditions *ini_boxes,
+             InputHeating *input_heating, InputIonization *input_ionization, InputJAlpha *input_jalpha,
+             TsBox *this_spin_temp);
 
 // Global arrays which have yet to be moved to structs
 // R x box arrays
@@ -86,7 +88,9 @@ static int debug_printed;
 
 int ComputeTsBox(float redshift, float prev_redshift, float perturbed_field_redshift, short cleanup,
                  PerturbedField *perturbed_field, XraySourceBox *source_box,
-                 TsBox *previous_spin_temp, InitialConditions *ini_boxes, TsBox *this_spin_temp) {
+                 TsBox *previous_spin_temp, InitialConditions *ini_boxes,
+                 InputHeating *input_heating, InputIonization *input_ionization, InputJAlpha *input_jalpha,
+                 TsBox *this_spin_temp) {
     int status;
     Try {  // This Try{} wraps the whole function.
         LOG_DEBUG("Spintemp input values:");
@@ -107,7 +111,8 @@ int ComputeTsBox(float redshift, float prev_redshift, float perturbed_field_reds
         debug_printed = 0;
 
         ts_main(redshift, prev_redshift, perturbed_field_redshift, cleanup, perturbed_field,
-                source_box, previous_spin_temp, ini_boxes, this_spin_temp);
+                source_box, previous_spin_temp, ini_boxes,
+                input_heating, input_ionization, input_jalpha, this_spin_temp);
 
         destruct_heat();
 
@@ -1342,7 +1347,9 @@ struct Ts_cell get_Ts_fast(float zp, float dzp, struct spintemp_from_sfr_prefact
 // outer-level function for calculating Ts based on the Halo boxes
 void ts_main(float redshift, float prev_redshift, float perturbed_field_redshift, short cleanup,
              PerturbedField *perturbed_field, XraySourceBox *source_box, TsBox *previous_spin_temp,
-             InitialConditions *ini_boxes, TsBox *this_spin_temp) {
+             InitialConditions *ini_boxes,
+             InputHeating *input_heating, InputIonization *input_ionization, InputJAlpha *input_jalpha,
+             TsBox *this_spin_temp) {
     int R_ct;
     unsigned long long int box_ct;
     double x_e_ave_p, Tk_ave_p;
@@ -1797,6 +1804,9 @@ void ts_main(float redshift, float prev_redshift, float perturbed_field_redshift
             rad.prev_Tk = previous_spin_temp->kinetic_temp_neutral[box_ct];
             rad.prev_xe = previous_spin_temp->xray_ionised_fraction[box_ct];
 
+            // Add exotic J_alpha injection to radiative terms before Ts calculation
+            rad.dxlya_dt += input_jalpha->input_jalpha[box_ct];
+
             ts_cell = get_Ts_fast(redshift, dzp, &zp_consts, &rad);
             this_spin_temp->spin_temperature[box_ct] = ts_cell.Ts;
             this_spin_temp->kinetic_temp_neutral[box_ct] = ts_cell.Tk;
@@ -1804,6 +1814,15 @@ void ts_main(float redshift, float prev_redshift, float perturbed_field_redshift
             if (astro_options_global->USE_MINI_HALOS) {
                 this_spin_temp->J_21_LW[box_ct] = ts_cell.J_21_LW;
             }
+
+            // Add exotic energy injection (heating and ionization applied after Ts calculation)
+            this_spin_temp->kinetic_temp_neutral[box_ct] += input_heating->input_heating[box_ct];
+            this_spin_temp->xray_ionised_fraction[box_ct] += input_ionization->input_ionization[box_ct];
+            // Clamp x_e to valid range [0, 1]
+            if (this_spin_temp->xray_ionised_fraction[box_ct] > 1.0)
+                this_spin_temp->xray_ionised_fraction[box_ct] = 1.0 - FRACT_FLOAT_ERR;
+            if (this_spin_temp->xray_ionised_fraction[box_ct] < 0.0)
+                this_spin_temp->xray_ionised_fraction[box_ct] = 0.0;
 
             // Single cell debug
             if (box_ct == 0) {

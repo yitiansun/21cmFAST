@@ -18,7 +18,9 @@ int ComputePerturbedHaloCatalog(float redshift, InitialConditions *boxes, TsBox 
 
 int ComputeTsBox(float redshift, float prev_redshift, float perturbed_field_redshift, short cleanup,
                  PerturbedField *perturbed_field, XraySourceBox *source_box,
-                 TsBox *previous_spin_temp, InitialConditions *ini_boxes, TsBox *this_spin_temp);
+                 TsBox *previous_spin_temp, InitialConditions *ini_boxes,
+                 InputHeating *input_heating, InputIonization *input_ionization, InputJAlpha *input_jalpha,
+                 TsBox *this_spin_temp);
 
 int ComputeIonizedBox(float redshift, float prev_redshift, PerturbedField *perturbed_field,
                       PerturbedField *previous_perturbed_field, IonizedBox *previous_ionize_box,
@@ -30,6 +32,12 @@ int ComputeBrightnessTemp(float redshift, TsBox *spin_temp, IonizedBox *ionized_
 
 int ComputeHaloBox(double redshift, InitialConditions *ini_boxes, HaloCatalog *halos,
                    TsBox *previous_spin_temp, IonizedBox *previous_ionize_box, HaloBox *grids);
+
+int InitInputHeating(InputHeating *box);
+
+int InitInputIonization(InputIonization *box);
+
+int InitInputJAlpha(InputJAlpha *box);
 
 int UpdateXraySourceBox(HaloBox *halobox, double R_inner, double R_outer, int R_ct,
                         XraySourceBox *source_box);

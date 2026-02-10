@@ -100,3 +100,15 @@ typedef struct BrightnessTemp {
     float *brightness_temp;
     float *tau_21;
 } BrightnessTemp;
+
+typedef struct InputHeating {
+    float *input_heating;
+} InputHeating;
+
+typedef struct InputIonization {
+    float *input_ionization;
+} InputIonization;
+
+typedef struct InputJAlpha {
+    float *input_jalpha;
+} InputJAlpha;
